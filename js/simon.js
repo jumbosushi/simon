@@ -1,5 +1,11 @@
 var KEYS = ['c', 'd', 'e', 'f'];
 var NOTE_DURATION = 1000;
+var ECHO_THRESHOLD = 2500;
+
+// Echo feature
+var echoEnabled = true;
+var echoTimeOut;
+var echoSequence = [];
 
 // NoteBox
 //
@@ -37,7 +43,29 @@ function NoteBox(key, onClick) {
 				boxEl.classList.remove('active');
 			}
 		}, NOTE_DURATION)
-	}
+
+    this.echo(this.key)
+
+	}.bind(this)
+
+  this.echo = function(key) {
+		if (!echoEnabled) return;
+
+    if (echoTimeOut) clearTimeout(echoTimeOut)
+    echoSequence.push(key)
+
+    // Update the global echo timeout object
+    echoTimeOut = setTimeout(function() {
+      echoSequence.forEach(function(key, i) {
+        setTimeout(function() {
+          notes[key].play()
+          // Clear the echo
+          echoTimeOut = null;
+          echoSequence = []
+        }, i * NOTE_DURATION)
+      })
+    }, ECHO_THRESHOLD)
+  }
 
 	// Enable this NoteBox
 	this.enable = function () {
@@ -71,6 +99,6 @@ KEYS.forEach(function (key) {
 	notes[key] = new NoteBox(key);
 });
 
-KEYS.concat(KEYS.slice().reverse()).forEach(function(key, i) {
-	setTimeout(notes[key].play.bind(null, key), i * NOTE_DURATION);
-});
+// KEYS.concat(KEYS.slice().reverse()).forEach(function(key, i) {
+	// setTimeout(notes[key].play.bind(null, key), i * NOTE_DURATION);
+// });
